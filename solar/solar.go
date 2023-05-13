@@ -1,4 +1,4 @@
-package solar
+package main
 
 import (
 	"net/http"

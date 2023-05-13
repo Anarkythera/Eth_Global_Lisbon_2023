@@ -1,4 +1,4 @@
-package battery
+package main
 
 import (
 	"net/http"
