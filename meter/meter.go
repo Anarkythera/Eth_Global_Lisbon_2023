@@ -2,12 +2,13 @@ package main
 
 import (
 	"fmt"
-	"io/ioutil"
-	"net/http"
 	"os"
 	"time"
 
+	"github.com/ethereum/go-ethereum/common"
+	"github.com/ethereum/go-ethereum/ethclient"
 	"github.com/labstack/echo"
+	"github.com/labstack/echo/middleware"
 	"gopkg.in/yaml.v3"
 )
 
@@ -55,8 +56,9 @@ func initConfig() (config, error) {
 
 func startEcho() {
 	e := echo.New()
-	e.GET("/ViewConfig", ViewConfig)
-	e.POST("/EditConfig", EditConfig)
+	e.Use(middleware.CORS())
+	e.GET("/config", ViewConfig)
+	e.POST("/config", EditConfig)
 	e.Logger.Fatal(e.Start(ControllerPort))
 
 }
@@ -81,20 +83,19 @@ func consumptionCounter() {
 }
 
 func readContract() {
-	testnetURL := "https://api-testnet.polygonscan.com/"
-	rest := "api?module=account&action=balance&address=0x3092ef862A180D0f44C5E537EfE05Cd7DCbB28A7&apikey="
-	apiKey := ""
 
-	queryURL := fmt.Sprintf("%s%s%s", testnetURL, rest, apiKey)
+	client, err := ethclient.Dial("https://api-testnet.polygonscan.com/")
+	if err != nil {
+		// handle error
 
-	fmt.Printf(queryURL)
-	req, _ := http.NewRequest("POST", queryURL, nil)
+	}
 
-	res, _ := http.DefaultClient.Do(req)
+	address := common.HexToAddress("0x4648a43B2C14Da09FdF82B161150d3F634f40491")
+	instance, err := NewZap(address, client)
+	if err != nil {
+		panic(err)
+	}
 
-	defer res.Body.Close()
-	body, _ := ioutil.ReadAll(res.Body)
+	fmt.Printf("\n\n balanceOf %+v \n\n", instance.BalanceOf)
 
-	//fmt.Println(res)
-	fmt.Println(string(body))
 }
